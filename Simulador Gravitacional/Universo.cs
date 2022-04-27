@@ -10,14 +10,40 @@ namespace Simulador_Gravitacional
         private int qtd_corpos;
         private int interacoes;
         private int tempo;
+
         private double G = (6.674184 * Math.Pow(10, -11));
+
         private List<string> output_list = new List<string>();
         List<Corpo> corpos = new List<Corpo>();
 
+        /// <summary>
+        /// Classe universo
+        /// </summary>
         public Universo()
         {
             this.ReadBody(); //Lê o arquivo de entrada
 
+            this.Interacoes();
+
+            string file = "output.uni";
+
+            FileStream myFile = new FileStream(file, FileMode.OpenOrCreate, FileAccess.Write);
+            StreamWriter sw = new StreamWriter(myFile, Encoding.UTF8);
+
+            foreach (var item in output_list)
+            {
+                sw.WriteLine(item);
+            }
+
+            sw.Close();
+            myFile.Close();
+        }
+
+        /// <summary>
+        /// Começa as interações
+        /// </summary>
+        private void Interacoes()
+        {
             output_list.Add(String.Format("{0};{1}", corpos.Count, interacoes));
 
             Console.WriteLine("Interações: " + interacoes);
@@ -28,48 +54,39 @@ namespace Simulador_Gravitacional
                 foreach (Corpo corpo_1 in corpos)
                 {
                     //Calcular força de todos os corpos
-                    if(i > 0)
+                    if (i > 0)
                     {
                         foreach (Corpo corpo_2 in corpos)
                         {
                             if (corpo_1 == corpo_2) continue;
 
-                            CalculateForce(corpo_1, corpo_2); //Acumula a força dos corpos
+                            InteragirCorpo(corpo_1, corpo_2);
                         }
 
-                        MoveBody(); //Aplica força nos corpos
+                        MoveBody();
                     }
+
                     output_list.Add(String.Format("{0}", corpo_1.ToString()));
                 }
 
-                ApplyColision(); //Aplica a colisão em todos os corpos
-                ClearForce(); //Limpar todas as forças
+                CheckColision();
+                ClearForce();
             }
-
-            string file = "output.uni";
-
-            FileStream myFile = new FileStream(file, FileMode.OpenOrCreate, FileAccess.Write);
-            StreamWriter sw = new StreamWriter(myFile, Encoding.UTF8);
-            
-            foreach (var item in output_list)
-            {
-                sw.WriteLine(item);
-            }
-
-            sw.Close();
-            myFile.Close();
         }
-        
-        private void ApplyColision()
+
+        /// <summary>
+        /// Checa a colisão de todos os corpos
+        /// </summary>
+        private void CheckColision()
         {
             List<Corpo> corpos_removidos = new List<Corpo>();
-            foreach(Corpo corpo in corpos)
+            foreach (Corpo corpo in corpos)
             {
-                foreach(Corpo corpo2 in corpos)
+                foreach (Corpo corpo2 in corpos)
                 {
                     if (corpo == corpo2) continue;
 
-                    if(WasColision(corpo, corpo2))
+                    if (WasColision(corpo, corpo2))
                     {
                         if (corpo.getRaio() > corpo2.getRaio())
                             corpos_removidos.Add(corpo2);
@@ -79,12 +96,16 @@ namespace Simulador_Gravitacional
                 }
             }
 
-            foreach(Corpo corpo in corpos_removidos)
-            {
+            foreach (Corpo corpo in corpos_removidos)
                 corpos.Remove(corpo);
-            }
         }
 
+        /// <summary>
+        /// Retorna se há colisão entre os corpos
+        /// </summary>
+        /// <param name="corpo">Corpo 1</param>
+        /// <param name="corpo2">Corpo 2</param>
+        /// <returns>Resultado se há colisão</returns>
         private bool WasColision(Corpo corpo, Corpo corpo2)
         {
             double distance = corpo.getDistance(corpo2);
@@ -94,14 +115,20 @@ namespace Simulador_Gravitacional
             return false;
         }
 
+        /// <summary>
+        /// Limpa as forças dos corpos
+        /// </summary>
         private void ClearForce()
         {
-            foreach(Corpo corpo in corpos)
+            foreach (Corpo corpo in corpos)
             {
                 corpo.ClearForce();
             }
         }
 
+        /// <summary>
+        /// Movimenta todos os corpos
+        /// </summary>
         private void MoveBody()
         {
             foreach (Corpo corpo in corpos)
@@ -122,7 +149,12 @@ namespace Simulador_Gravitacional
             }
         }
 
-        private void CalculateForce(Corpo corpo_1, Corpo corpo_2)
+        /// <summary>
+        /// Faz a interação de dois corpos calculando a força e decompondo elas
+        /// </summary>
+        /// <param name="corpo_1">Corpo 1</param>
+        /// <param name="corpo_2">Corpo 2</param>
+        private void InteragirCorpo(Corpo corpo_1, Corpo corpo_2)
         {
             double m1 = corpo_1.getMassa();
             double m2 = corpo_2.getMassa();
@@ -141,12 +173,14 @@ namespace Simulador_Gravitacional
             corpo_2.addForce(force, forceX, forceY);
         }
 
-
+        /// <summary>
+        /// Realiza a leitura do arquivo de entrada
+        /// </summary>
         private void ReadBody()
         {
             Console.WriteLine("Fazendo a leitura inicial dos corpos celestes");
 
-            string[] lines = File.ReadAllLines(@"corpos.txt");
+            string[] lines = File.ReadAllLines("corpos.txt");
 
             this.qtd_corpos = Convert.ToInt32(lines[0].Split(';')[0]);
             this.interacoes = Convert.ToInt32(lines[0].Split(';')[1]);
@@ -156,6 +190,10 @@ namespace Simulador_Gravitacional
             Console.WriteLine("Corpos criados: " + corpos.Count);
         }
 
+        /// <summary>
+        /// Cria um corpo
+        /// </summary>
+        /// <param name="lines">Array que está os corpos para serem criados</param>
         private void CreateCelestialBody(string[] lines)
         {
             for (int line = 1; line < lines.Length; ++line)
