@@ -5,6 +5,11 @@ VisualStudioVersion = 15.0.28307.1684
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Simulador Gravitacional", "Simulador Gravitacional\Simulador Gravitacional.csproj", "{7D9A06D3-C8F8-412D-9E26-9680EEA40EEA}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{D09EEE13-1324-4B70-9271-664883335655}"
+	ProjectSection(SolutionItems) = preProject
+		corpos.txt = corpos.txt
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
